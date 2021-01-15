@@ -1,8 +1,9 @@
 """PDDL parsing.
 """
-from pddlgym.structs import (Type, Predicate, LiteralConjunction, LiteralDisjunction,
-                             Not, Anti, ForAll, Exists, ProbabilisticEffect,
-                             TypedEntity, ground_literal, DerivedPredicate)
+from pddlgym.structs import (Type, Predicate, Literal, LiteralConjunction,
+                             LiteralDisjunction, Not, Anti, ForAll, Exists,
+                             ProbabilisticEffect, TypedEntity, ground_literal,
+                             DerivedPredicate)
 
 import re
 
@@ -59,6 +60,8 @@ class Operator:
     def _create_preconds_pddl_str(self, preconds):
         all_params = set()
         precond_strs = []
+        if isinstance(preconds, Literal):
+            preconds = LiteralConjunction([preconds])
         for term in preconds.literals:
             params = set(map(str, term.variables))
             if hasattr(term, 'negated_as_failure') and term.negated_as_failure:
@@ -160,7 +163,7 @@ class PDDLParser:
             lits = []
             probs = []
             expr = string[14:-1].strip()
-            for match in re.finditer("(\d*\.?\d+)", expr):
+            for match in re.finditer("(\d*\.\d+)", expr):
                 prob = float(match.group())
                 subexpr = self._find_balanced_expression(expr[match.end():].strip(), 0)
                 lit = self._parse_into_literal(subexpr, params, is_effect=is_effect)
